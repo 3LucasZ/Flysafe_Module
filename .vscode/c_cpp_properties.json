@@ -347,7 +347,7 @@
                 "ESP_PLATFORM",
                 "IDF_VER=\"4.4.4\"",
                 "_GNU_SOURCE",
-                "PLATFORMIO=60107",
+                "PLATFORMIO=60109",
                 "ARDUINO_ESP32_DEV",
                 "CORE_DEBUG_LEVEL=5",
                 "HAVE_CONFIG_H",
@@ -359,8 +359,8 @@
                 "ESP32",
                 ""
             ],
-            "cStandard": "c99",
-            "cppStandard": "c++11",
+            "cStandard": "gnu99",
+            "cppStandard": "gnu++11",
             "compilerPath": "/Users/lucaszheng/.platformio/packages/toolchain-xtensa-esp32@8.4.0+2021r2-patch5/bin/xtensa-esp32-elf-gcc",
             "compilerArgs": [
                 "-mlongcalls",

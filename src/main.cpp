@@ -4,7 +4,6 @@
 #include <freertos/task.h>
 #include <driver/gpio.h>
 #include "sdkconfig.h"
-#include "my_utils.cpp"
 
 // incl Arduino component
 #include <Arduino.h>
@@ -23,15 +22,13 @@ BLECharacteristic *volChar;
 BLECharacteristic *speakerChar;
 BLECharacteristic *offsetChar;
 BLECharacteristic *rebootChar;
-class MyServerCallbacks : public BLEServerCallbacks
-{
-    void onConnect(BLEServer *pServer){
-        // to only allow one device connected at a time, do not restart advertising.
-        // pServer->startAdvertising(); // restart advertising
+class MyServerCallbacks : public BLEServerCallbacks {
+    void onConnect(BLEServer *pServer) {
+        // to only allow one device connected at a time, do not restart advertising after a connection
+        // pServer->startAdvertising(); // restart advertising after a connection
     };
-    void onDisconnect(BLEServer *pServer)
-    {
-        pServer->startAdvertising(); // restart advertising
+    void onDisconnect(BLEServer *pServer) {
+        pServer->startAdvertising(); // restart advertising after a disconnect
     }
 };
 
@@ -45,19 +42,19 @@ LIDARLite lidar;
 Preferences preferences;
 int curVol = 50;
 int curOffset = 0;
+int wait = 50;
 
 void setup()
 {
     // setup serial
     Serial.begin(115200);
     while (!Serial);
-    Serial.println("Program begun");
+    Serial.println("Started program");
 
     // setup EEPROM
     preferences.begin("sto", false);
     curVol = preferences.getInt("vol", 50);
     curOffset = preferences.getInt("offset", 0);
-
     Serial.println("Retrieved data from EEPROM");
 
     // setup BLE server + service
@@ -67,13 +64,10 @@ void setup()
     BLEService *pService = pServer->createService(SERVICE_UUID);
 
     // setup characteristics
-    distChar = pService->createCharacteristic(
-        CHAR_DIST_UUID,
-        BLECharacteristic::PROPERTY_READ |
-            BLECharacteristic::PROPERTY_WRITE);
-    //distChar->setValue(0);
-    volChar = pService->createCharacteristic(
-        CHAR_VOL_UUID,
+    distChar = pService->createCharacteristic(CHAR_DIST_UUID, BLECharacteristic::PROPERTY_READ);
+    int tmpDist = 0;
+    distChar->setValue(tmpDist);
+    volChar = pService->createCharacteristic(CHAR_VOL_UUID,
         BLECharacteristic::PROPERTY_READ |
             BLECharacteristic::PROPERTY_WRITE);
     volChar->setValue(curVol);
@@ -86,7 +80,8 @@ void setup()
         CHAR_REBOOT_UUID,
         BLECharacteristic::PROPERTY_READ |
             BLECharacteristic::PROPERTY_WRITE);
-    //rebootChar->setValue(0);
+    int tmpReboot = 1;
+    rebootChar->setValue(tmpReboot);
 
     // begin BLE server
     pService->start();
@@ -100,44 +95,40 @@ void setup()
 
     // setup LIDAR
     lidar.begin(0, true); // Set configuration to default and I2C to 400 kHz
-    lidar.configure(0);   // Change this number to try out alternate configurations
+    lidar.configure(3);   // Change this number to try out alternate configurations, 3 means max range
     Serial.println("LIDAR setup finished");
 }
 
 void loop()
 {
-    // read frame
-    int decimeters = round(lidar.distance() / 10.0);
-    Serial.print("dm:");
-    Serial.println(decimeters);
-
-    // set precision: 2
-    if (decimeters > 99){
-        decimeters = decimeters/10*10;
-    }
+    // read dist 
+    int dist = lidar.distance();
+    Serial.print("cm:");
+    Serial.println(dist);
 
     // write dist to Web
-    distChar->setValue(decimeters);
-    delay(100);
+    distChar->setValue(dist);
+    delay(wait);
    
     // read vol from Web
     int newVol = volChar->getData()[0];
     Serial.print("vol:");
     Serial.println(newVol);
     preferences.putInt("vol",newVol);
-    delay(100);
+    delay(wait);
 
-    // // read offset from Web
-    // int newOffset = offsetChar->getData()[0];
-    // Serial.print("offset:");
-    // Serial.println(newOffset);
-    // preferences.putInt("offset",newOffset);
-    // delay(25);
+    // read offset from Web
+    uint8_t* offsetBuffer = offsetChar->getData();
+    int newOffset = offsetBuffer[0]+256*offsetBuffer[1];
+    Serial.print("offset:");
+    Serial.println(newOffset);
+    preferences.putInt("offset",newOffset);
+    delay(wait);
 
-    // // read reboot from Web
-    // int newReboot = rebootChar->getData()[0];
-    // Serial.print("reboot:");
-    // Serial.println(newReboot);
-    // if (newReboot) ESP.restart();
-    // delay(25);
+    // read reboot from Web
+    int newReboot = rebootChar->getData()[0];
+    Serial.print("reboot:");
+    Serial.println(newReboot);
+    if (newReboot!=1) ESP.restart();
+    delay(wait);
 }
