@@ -347,7 +347,7 @@
                 "ESP_PLATFORM",
                 "IDF_VER=\"4.4.4\"",
                 "_GNU_SOURCE",
-                "PLATFORMIO=60109",
+                "PLATFORMIO=60111",
                 "ARDUINO_ESP32_DEV",
                 "CORE_DEBUG_LEVEL=5",
                 "HAVE_CONFIG_H",

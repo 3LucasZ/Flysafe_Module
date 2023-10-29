@@ -58,7 +58,7 @@ void setup()
     Serial.println("Retrieved data from EEPROM");
 
     // setup BLE server + service
-    BLEDevice::init("FlySafeModuleA"); // remember to incr to B,C,D
+    BLEDevice::init("FlySafeModuleA"); // remember to incr to B,C,D,etc
     BLEServer *pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks()); // set the callback function
     BLEService *pService = pServer->createService(SERVICE_UUID);
