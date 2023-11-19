@@ -29,5 +29,5 @@ Notes:
 Technical Manual:
 https://cdn.sparkfun.com/assets/f/e/6/3/7/PM-14032.pdf?_gl=1*xwk7iu*_ga*ODczNjg1MjM3LjE2OTEyMDkwNjM.*_ga_T369JS7J9N*MTY5MTIwOTA2My4xLjAuMTY5MTIwOTA2My42MC4wLjA.
 
-Operation modes:
+LIDAR operation modes:
 https://github.com/garmin/LIDARLite_Arduino_Library/blob/master/src/LIDARLite.cpp
